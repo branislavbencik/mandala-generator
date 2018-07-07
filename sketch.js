@@ -1,81 +1,119 @@
-var x, y, radius;
-var sliderD, sliderI, sliderO, sliderW;
-var textArray = [];
 
-var some_color;
-var not_saved = true;
+var x, y, gui, graphics;
+var A_deg, B_deg, A_radius, B_radius;
+var line_width, seg_num, file_res, save_button;
+var saveImage = false;
+var scaling = 1;
+var DEFAULTWIDTH = 800;
+var DEFAULTHEIGHT = 680;
 
 function setup() {
-    createCanvas(750, 750);
-    angleMode(DEGREES);
-    sliderSD = createSlider(0, 180, 116, 0.5);
-    sliderSD.style("width", "200px");
-    sliderSD.position(10, 30);
+  angleMode(DEGREES);
+  createCanvas(DEFAULTWIDTH, DEFAULTHEIGHT);
 
-    sliderED = createSlider(0, 180, 81, 0.5);
-    sliderED.style("width", "200px");
-    sliderED.position(10, 100);
+  // make two separate frames for purpose of downloading img without gui
+  gui = createGraphics(120, 680);
+  g = createGraphics(680, 680);
+  g.translate(width/2 - 60, height/2);
 
-    sliderSR = createSlider(0, 300, 150, 0.2);
-    sliderSR.style("width", "100px");
-    sliderSR.position(10, 170);
-
-    sliderER = createSlider(0, 300, 300, 0.2);
-    sliderER.style("width", "100px");
-    sliderER.position(10, 240);
-
-    sliderW = createSlider(0.01, 0.7, 0.2, 0.01);
-    sliderW.style("width", "100px");
-    sliderW.position(10, 310);
-
-    sliderS = createSlider(0.03, 1, 0.5, 0.001);
-    sliderS.style("width", "100px");
-    sliderS.position(10, 380);
-
-    button = createButton('save file');
-    button.position(25, 440);
-    button.mousePressed(saveFile);
-
-    radius = 300;
+  makeGui();
 }
 
 function draw() {
-    background(220);
+  drawGui();
+  drawGraphics();
 
-    text("startpoint degree:", 15, 20);
-    text(sliderSD.value() + " '", 45, 60);
+  image(gui, 0, 0);
+  image(g, 120, 0);
 
-    text("endpoint degree:", 15, 90);
-    text(sliderED.value() + " '", 40, 130);
+}
 
-    text("startpoint radius:", 15, 160);
-    text(sliderSR.value() + " px", 40, 200);
+function makeGui(){
+  A_deg = createSlider(0, 180, 116, 0.02);
+  A_deg.style("width", "100px");
+  A_deg.position(10, 60);
 
-    text("endpoint radius:", 15, 230);
-    text(sliderER.value() + " px", 40, 270);
+  B_deg = createSlider(0, 180, 81, 0.02);
+  B_deg.style("width", "100px");
+  B_deg.position(10, 130);
 
-    text("line width:", 30, 300);
-    text(sliderW.value() + " px", 40, 340);
+  A_radius = createSlider(0, 300, 150, 0.5);
+  A_radius.style("width", "100px");
+  A_radius.position(10, 200);
 
-    text("num of segments:", 15, 370);
-    text(Math.floor(360 / sliderS.value()) + " segments", 40, 410);
+  B_radius = createSlider(0, 300, 300, 0.5);
+  B_radius.style("width", "100px");
+  B_radius.position(10, 270);
 
-    translate(width/2 + 60, height/2);
-    strokeWeight(sliderW.value());
-    randomPattern();
+  line_width = createSlider(0.01, 0.7, 0.2, 0.01);
+  line_width.style("width", "100px");
+  line_width.position(10, 340);
+
+  seg_num = createSlider(0.03, 1, 0.5, 0.001);
+  seg_num.style("width", "100px");
+  seg_num.position(10, 410);
+
+  file_res = createInput("file resolution in px");
+  file_res.style("width", "100px");
+  file_res.position(7, 470);
+
+  save_button = createButton("download file");
+  save_button.position(15, 500);
+  save_button.mousePressed(saveFile);
+}
+
+function drawGui(){
+  gui.background(220);
+
+  gui.text("startpoint degree:", 15, 50);
+  gui.text(A_deg.value() + " '", 40, 90);
+
+  gui.text("endpoint degree:", 15, 120);
+  gui.text(B_deg.value() + " '", 40, 160);
+
+  gui.text("startpoint radius:", 15, 190);
+  gui.text(A_radius.value() + " px", 40, 230);
+
+  gui.text("endpoint radius:", 15, 260);
+  gui.text(B_radius.value() + " px", 40, 300);
+
+  gui.text("line width:", 30, 330);
+  gui.text(line_width.value() + " px", 40, 370);
+
+  gui.text("num of segments:", 15, 400);
+  gui.text(Math.floor(360 / seg_num.value()) + " segments", 25, 440);
+}
+
+function drawGraphics(){
+  g.background(220);
+  g.strokeWeight(line_width.value());
+  randomPattern();
 }
 
 function randomPattern(){
-  //noprotect
-	for(var degree = 0; degree < 360; degree += sliderS.value()){
-      	x1 = sliderSR.value() * cos(sliderSD.value()*degree);
-      	y1 = sliderSR.value() * sin(sliderSD.value()*degree);
-      	x2 = sliderER.value() * cos(sliderED.value()*degree);
-  		y2 = sliderER.value() * sin(sliderED.value()*degree);
-      	line(x1, y1, x2, y2);
+    //noprotect
+	for(var deg = 0; deg < 360; deg += seg_num.value()){
+      	x1 = scaling * A_radius.value() * cos(A_deg.value()*deg);
+      	y1 = scaling * A_radius.value() * sin(A_deg.value()*deg);
+      	x2 = scaling * B_radius.value() * cos(B_deg.value()*deg);
+  		y2 = scaling * B_radius.value() * sin(B_deg.value()*deg);
+      	g.line(x1, y1, x2, y2);
     }
 }
 
 function saveFile(){
-    saveCanvas('mandala_n1', 'png');
+  	resizeCanvas(file_res.value(), file_res.value());
+  	g = createGraphics(file_res.value(), file_res.value());
+  	g.translate(width/2, height/2);
+
+  	scaling = (float)(file_res.value() / DEFAULTHEIGHT);
+  	console.log(scaling);
+  	drawGraphics();
+    image(g, 0, 0, file_res.value(), file_res.value());
+    gui.saveCanvas(g, 'mandala', 'png');
+
+  	resizeCanvas(DEFAULTWIDTH, DEFAULTHEIGHT);
+  	g = createGraphics(680, 680);
+  	g.translate(width/2 - 60, height/2);
+  	scaling = 1;
 }
